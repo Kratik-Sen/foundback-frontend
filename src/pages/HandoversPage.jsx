@@ -1,0 +1,20 @@
+import { CheckCircle2, Handshake, KeyRound, MapPin } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
+import api from '../api/client'
+import Modal from '../components/Modal'
+import PageHeader from '../components/PageHeader'
+import StatusBadge from '../components/StatusBadge'
+import { EmptyState, ErrorState, Spinner } from '../components/States'
+import { useAuth } from '../context/AuthContext'
+import { formatDate } from '../utils/format'
+
+export default function HandoversPage({ status }) {
+  const { user } = useAuth(); const [items, setItems] = useState(null); const [error, setError] = useState(''); const [confirming, setConfirming] = useState(null); const [otp, setOtp] = useState('')
+  const load = useCallback(() => api.get('/handovers').then(({ data }) => setItems(status ? data.handovers.filter((entry) => status === 'records' ? entry.status === 'completed' : entry.status !== 'completed') : data.handovers)).catch((err) => setError(err.message)), [status])
+  useEffect(() => { load() }, [load])
+  const confirm = async () => { try { const { data } = await api.patch(`/handovers/${confirming._id}/confirm`, { otp }); toast.success(data.message); setConfirming(null); setOtp(''); load() } catch (err) { toast.error(err.message) } }
+  if (error) return <ErrorState message={error} onRetry={load} />
+  if (!items) return <Spinner label="Loading handovers" />
+  return <><PageHeader eyebrow="Verified collection" title={status === 'records' ? 'Handover records' : 'Secure handovers'} description="An item is marked returned only after the owner, finder, and authorized staff confirm collection." />{items.length ? <div className="space-y-4">{items.map((entry) => <article key={entry._id} className="card grid gap-5 p-5 md:grid-cols-[1fr_auto] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><StatusBadge status={entry.status} /><span className="text-xs text-slate-400">{formatDate(entry.date)} at {entry.time}</span></div><h2 className="mt-3 font-extrabold text-slate-950 dark:text-white">{entry.item?.title}</h2><p className="mt-2 flex items-center gap-2 text-sm text-slate-500"><MapPin size={15} /> {entry.location}</p><div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500"><span className={entry.ownerConfirmed ? 'text-emerald-600' : ''}>Owner {entry.ownerConfirmed ? 'confirmed' : 'pending'}</span><span className={entry.finderConfirmed ? 'text-emerald-600' : ''}>Finder {entry.finderConfirmed ? 'confirmed' : 'pending'}</span><span className={entry.staffConfirmed ? 'text-emerald-600' : ''}>Staff {entry.staffConfirmed ? 'confirmed' : 'pending'}</span></div></div>{entry.status !== 'completed' && <button onClick={() => setConfirming(entry)} className="btn-primary"><CheckCircle2 size={16} /> Confirm my part</button>}</article>)}</div> : <EmptyState title={status === 'records' ? 'No completed handovers' : 'No pending handovers'} message="Approved claims can be scheduled from their claim details page." />}<Modal open={Boolean(confirming)} onClose={() => setConfirming(null)} title="Confirm handover"><div className="text-center"><Handshake className="mx-auto text-brand-600" size={34} /><p className="mt-3 text-sm leading-6 text-slate-500">{(user.role === 'staff' || confirming?.owner?._id === user._id) ? 'Enter the six-digit collection OTP to verify the item is physically present.' : 'Confirm that you handed the item to the verified owner.'}</p>{(user.role === 'staff' || user.role === 'admin' || confirming?.owner?._id === user._id) && <label className="mt-5 block"><span className="label text-left">Collection OTP</span><div className="relative"><KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} /><input value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))} className="input pl-10 text-center font-mono text-xl tracking-[.3em]" maxLength="6" /></div></label>}<button onClick={confirm} className="btn-primary mt-5 w-full">Confirm handover</button></div></Modal></>
+}
