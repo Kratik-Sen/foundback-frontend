@@ -1,10 +1,9 @@
-import { CheckCheck, Flag, ImagePlus, LoaderCircle, LockKeyhole, MessageCircle, Send, ShieldOff } from 'lucide-react'
+import { CheckCheck, ImagePlus, LoaderCircle, LockKeyhole, MessageCircle, Send, ShieldOff } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../api/client'
 import { connectRealtime } from '../api/realtime'
-import Modal from '../components/Modal'
 import PageHeader from '../components/PageHeader'
 import { EmptyState, ErrorState, Spinner } from '../components/States'
 import { useAuth } from '../context/AuthContext'
@@ -24,8 +23,6 @@ export default function ChatsPage() {
   const [connectionState, setConnectionState] = useState('connecting')
   const [otherOnline, setOtherOnline] = useState(false)
   const [error, setError] = useState('')
-  const [reportOpen, setReportOpen] = useState(false)
-  const [reportDescription, setReportDescription] = useState('')
   const socketRef = useRef(null)
   const activeChatRef = useRef(id || null)
   const joinedChatRef = useRef(null)
@@ -68,6 +65,24 @@ export default function ChatsPage() {
 
   useEffect(() => {
     activeChatRef.current = id || null
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return undefined
+
+    const updateActivity = (active) => api.patch(`/chats/${id}/active`, { active }).catch(() => {})
+    const syncActivity = () => updateActivity(document.visibilityState === 'visible')
+    syncActivity()
+    const heartbeat = window.setInterval(() => {
+      if (document.visibilityState === 'visible') updateActivity(true)
+    }, 8000)
+    document.addEventListener('visibilitychange', syncActivity)
+
+    return () => {
+      window.clearInterval(heartbeat)
+      document.removeEventListener('visibilitychange', syncActivity)
+      updateActivity(false)
+    }
   }, [id])
 
   useEffect(() => {
@@ -321,17 +336,6 @@ export default function ChatsPage() {
     }
   }
 
-  const report = async () => {
-    try {
-      await api.post('/complaints', { chat: id, reportedUser: other?._id, reportType: 'abusive_chat', description: reportDescription })
-      toast.success('Chat reported for admin review')
-      setReportOpen(false)
-      setReportDescription('')
-    } catch (err) {
-      toast.error(err.message)
-    }
-  }
-
   if (error) return <ErrorState message={error} onRetry={loadChats} />
   if (!chats) return <Spinner label="Opening secure chats" />
 
@@ -368,7 +372,6 @@ export default function ChatsPage() {
               {connectionState === 'connected' && otherOnline ? 'Live' : 'Offline'}
             </span>
             {!blockedByOther && <button onClick={block} className={`grid size-9 place-items-center rounded-lg ${blockedByMe ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-500/10' : 'text-slate-400 hover:bg-rose-50 hover:text-rose-600'}`} title={blockedByMe ? 'Unblock user' : 'Block user'} aria-label={blockedByMe ? 'Unblock user' : 'Block user'}><ShieldOff size={17} /></button>}
-            <button onClick={() => setReportOpen(true)} className="grid size-9 place-items-center rounded-lg text-slate-400 hover:bg-amber-50 hover:text-amber-600" title="Report chat"><Flag size={17} /></button>
           </header>
 
           <div ref={messageScrollerRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-slate-50/60 p-4 dark:bg-slate-950/40">
@@ -402,10 +405,5 @@ export default function ChatsPage() {
         </> : id ? <Spinner label="Loading conversation" /> : <div className="grid flex-1 place-items-center text-center"><div><MessageCircle className="mx-auto text-slate-300" size={42} /><p className="mt-3 text-sm text-slate-500">Choose a conversation.</p></div></div>}
       </section>
     </div>
-
-    <Modal open={reportOpen} onClose={() => setReportOpen(false)} title="Report this chat" footer={<><button className="btn-secondary" onClick={() => setReportOpen(false)}>Cancel</button><button className="btn-primary !bg-rose-600" onClick={report}>Send to admin</button></>}>
-      <p className="mb-4 text-sm text-slate-500">Reported chat messages become available to administrators for complaint review.</p>
-      <textarea rows="5" className="input" value={reportDescription} onChange={(event) => setReportDescription(event.target.value)} placeholder="Describe the abusive or suspicious behaviour..." />
-    </Modal>
   </div>
 }
