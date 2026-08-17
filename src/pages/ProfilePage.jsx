@@ -13,7 +13,7 @@ export default function ProfilePage() {
   const profile = useForm({ defaultValues: user })
   const password = useForm()
   const resetProfile = profile.reset
-  useEffect(() => { resetProfile(user) }, [user, resetProfile])
+  useEffect(() => { resetProfile({ ...user, semester: user?.semester ?? '' }) }, [user, resetProfile])
 
   const save = async (values) => {
     const payload = new FormData()
@@ -21,7 +21,7 @@ export default function ProfilePage() {
       if (key === 'profileImage') {
         if (value?.[0]) payload.append(key, value[0])
       } else if (['name', 'phone', 'course', 'branch', 'semester'].includes(key) && value !== undefined) {
-        payload.append(key, value)
+        payload.append(key, value ?? '')
       }
     })
     try {
