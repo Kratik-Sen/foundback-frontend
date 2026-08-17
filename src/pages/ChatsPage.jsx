@@ -1,4 +1,4 @@
-import { CheckCheck, ImagePlus, LoaderCircle, LockKeyhole, MessageCircle, Send, ShieldOff } from 'lucide-react'
+import { CheckCheck, ImagePlus, LoaderCircle, LockKeyhole, MessageCircle, Send, ShieldOff, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -18,6 +18,7 @@ export default function ChatsPage() {
   const [selected, setSelected] = useState(null)
   const [text, setText] = useState('')
   const [image, setImage] = useState(null)
+  const [imagePreview, setImagePreview] = useState('')
   const [sending, setSending] = useState(false)
   const [typing, setTyping] = useState('')
   const [connectionState, setConnectionState] = useState('connecting')
@@ -28,6 +29,7 @@ export default function ChatsPage() {
   const joinedChatRef = useRef(null)
   const otherUserRef = useRef(null)
   const messageScrollerRef = useRef(null)
+  const attachmentInputRef = useRef(null)
   const endRef = useRef(null)
   const typingTimer = useRef(null)
   const typingSent = useRef(false)
@@ -66,6 +68,17 @@ export default function ChatsPage() {
   useEffect(() => {
     activeChatRef.current = id || null
   }, [id])
+
+  useEffect(() => {
+    if (!image) {
+      setImagePreview('')
+      return undefined
+    }
+
+    const previewUrl = URL.createObjectURL(image)
+    setImagePreview(previewUrl)
+    return () => URL.revokeObjectURL(previewUrl)
+  }, [image])
 
   useEffect(() => {
     if (!id) return undefined
@@ -196,6 +209,8 @@ export default function ChatsPage() {
     setTyping('')
     typingSent.current = false
     clearTimeout(typingTimer.current)
+    setImage(null)
+    if (attachmentInputRef.current) attachmentInputRef.current.value = ''
 
     if (!id) {
       setSelected(null)
@@ -315,6 +330,7 @@ export default function ChatsPage() {
       receiveMessage(sentMessage)
       setText('')
       setImage(null)
+      if (attachmentInputRef.current) attachmentInputRef.current.value = ''
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -393,12 +409,16 @@ export default function ChatsPage() {
 
           <form onSubmit={send} className="shrink-0 border-t border-slate-100 p-3 dark:border-slate-800">
             {selected.status === 'blocked' && <div className={`mx-auto mb-3 flex max-w-3xl items-start gap-2 rounded-xl px-3 py-2.5 text-xs font-semibold ${blockedByOther ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300' : 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300'}`}><ShieldOff size={16} className="mt-0.5 shrink-0" /><span>{blockedMessage}{blockedByMe && <button type="button" onClick={block} className="ml-1 underline underline-offset-2">Unblock user</button>}</span></div>}
-            <div className="mx-auto flex max-w-3xl items-center gap-2">
-              <label className={`grid size-10 shrink-0 place-items-center rounded-xl text-slate-400 ${selected.status === 'blocked' ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800'}`}><ImagePlus size={19} /><input type="file" accept="image/*" className="hidden" disabled={selected.status === 'blocked'} onChange={(event) => setImage(event.target.files?.[0] || null)} /></label>
-              <div className="min-w-0 flex-1">
-                {image && <p className="mb-1 truncate text-[.65rem] text-brand-600">Attachment: {image.name}</p>}
-                <textarea rows="1" value={text} onChange={(event) => onTyping(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(event) } }} className="input min-h-10 max-h-28 resize-none py-2.5 leading-5" placeholder={selected.status === 'blocked' ? blockedMessage : 'Write a secure message...'} disabled={selected.status === 'blocked'} />
+            {imagePreview && <div className="mx-auto mb-2 flex max-w-3xl items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900">
+              <div className="relative size-16 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+                <img src={imagePreview} alt={`Preview of ${image.name}`} className="size-full object-cover" />
+                <button type="button" onClick={() => { setImage(null); if (attachmentInputRef.current) attachmentInputRef.current.value = '' }} className="absolute right-1 top-1 grid size-6 place-items-center rounded-full bg-black/70 text-white hover:bg-rose-600" aria-label="Remove selected image" title="Remove image"><X size={14} /></button>
               </div>
+              <div className="min-w-0"><p className="text-xs font-bold text-slate-800 dark:text-slate-100">Image ready to send</p><p className="mt-1 truncate text-[.65rem] text-slate-500">{image.name}</p></div>
+            </div>}
+            <div className="mx-auto flex max-w-3xl items-center gap-2">
+              <label className={`grid size-10 shrink-0 place-items-center rounded-xl text-slate-400 ${selected.status === 'blocked' ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800'}`}><ImagePlus size={19} /><input ref={attachmentInputRef} type="file" accept="image/*" className="hidden" disabled={selected.status === 'blocked'} onChange={(event) => setImage(event.target.files?.[0] || null)} /></label>
+              <textarea rows="1" value={text} onChange={(event) => onTyping(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(event) } }} className="input min-h-10 max-h-28 min-w-0 flex-1 resize-none py-2.5 leading-5" placeholder={selected.status === 'blocked' ? blockedMessage : 'Write a secure message...'} disabled={selected.status === 'blocked'} />
               <button disabled={sending || selected.status === 'blocked'} className="btn-primary size-10 !p-0" aria-label="Send message">{sending ? <LoaderCircle size={17} className="animate-spin" /> : <Send size={17} />}</button>
             </div>
           </form>
