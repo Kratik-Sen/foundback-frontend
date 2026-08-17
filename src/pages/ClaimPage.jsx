@@ -13,7 +13,16 @@ export default function ClaimPage() {
   const navigate = useNavigate()
   const [item, setItem] = useState(null)
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm()
-  useEffect(() => { api.get(`/items/${id}`).then(({ data }) => setItem(data.item)).catch((err) => { toast.error(err.message); navigate(`/items/${id}`) }) }, [id, navigate])
+  useEffect(() => {
+    api.get(`/items/${id}`).then(({ data }) => {
+      if (['returned', 'closed', 'expired', 'rejected'].includes(data.item.status)) {
+        toast.error('This item has already been returned and is no longer accepting claims.')
+        navigate(`/items/${id}`, { replace: true })
+        return
+      }
+      setItem(data.item)
+    }).catch((err) => { toast.error(err.message); navigate(`/items/${id}`) })
+  }, [id, navigate])
   const submit = async (values) => {
     const form = new FormData()
     const answers = (item.verificationQuestions || []).map((question, index) => ({ questionId: question._id, question: question.question, answer: values[`question_${index}`] }))

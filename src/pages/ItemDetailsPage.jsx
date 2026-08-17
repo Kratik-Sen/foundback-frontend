@@ -103,6 +103,7 @@ export default function ItemDetailsPage() {
     }
   }
   const image = selectedImage || item.images?.[0]?.url || placeholderImage
+  const finalized = ['returned', 'closed', 'expired', 'rejected'].includes(item.status)
 
   return (
     <div className="container-app py-10">
@@ -214,7 +215,7 @@ export default function ItemDetailsPage() {
             </div>
           )}
           <div className="mt-6 grid gap-2 sm:grid-cols-2">
-            {item.reportType === 'found' && !owner && (
+            {item.reportType === 'found' && !owner && !finalized && (
               <Link
                 to={`/items/${id}/claim`}
                 className="btn-primary sm:col-span-2"
@@ -225,7 +226,7 @@ export default function ItemDetailsPage() {
             <button onClick={bookmark} className="btn-secondary">
               <Bookmark size={16} /> Save item
             </button>
-            {item.reportType === 'found' && (
+            {item.reportType === 'found' && !finalized && (
               <button onClick={getQr} className="btn-secondary">
                 <QrCode size={16} /> View QR
               </button>
