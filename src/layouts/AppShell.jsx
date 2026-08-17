@@ -1,8 +1,8 @@
 import { ChevronLeft } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { io } from 'socket.io-client'
 import api from '../api/client'
+import { connectRealtime } from '../api/realtime'
 import AnimatedOutlet from '../components/AnimatedOutlet'
 import Header from '../components/Header'
 import { getWorkspaceNavigation } from '../config/navigation'
@@ -26,7 +26,11 @@ export default function AppShell() {
   useEffect(() => {
     if (!navigation.some(([, path]) => path === '/chats')) return undefined
     loadChatUnread()
-    const socket = io(import.meta.env.VITE_SOCKET_URL || window.location.origin, { withCredentials: true })
+    const socket = connectRealtime({ withCredentials: true })
+    if (!socket) {
+      const polling = window.setInterval(loadChatUnread, 15000)
+      return () => window.clearInterval(polling)
+    }
     socket.on('chat:unread-changed', loadChatUnread)
     return () => socket.disconnect()
   }, [loadChatUnread, navigation])

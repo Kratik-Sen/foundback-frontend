@@ -1,8 +1,8 @@
 import { Bell, CheckCheck } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { io } from 'socket.io-client'
 import api from '../api/client'
+import { connectRealtime } from '../api/realtime'
 import { gsap, useGSAP } from '../lib/gsap'
 import { timeAgo } from '../utils/format'
 
@@ -31,7 +31,11 @@ export default function NotificationMenu() {
   }
   useEffect(() => {
     load()
-    const socket = io(import.meta.env.VITE_SOCKET_URL || window.location.origin, { withCredentials: true })
+    const socket = connectRealtime({ withCredentials: true })
+    if (!socket) {
+      const polling = window.setInterval(load, 15000)
+      return () => window.clearInterval(polling)
+    }
     socket.on('notification:new', (notification) => { setItems((current) => [notification, ...current].slice(0, 6)); setUnread((count) => count + 1) })
     return () => socket.disconnect()
   }, [])

@@ -1,8 +1,8 @@
 import { Bell, CheckCheck, Trash2 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { io } from 'socket.io-client'
 import api from '../api/client'
+import { connectRealtime } from '../api/realtime'
 import PageHeader from '../components/PageHeader'
 import { EmptyState, ErrorState, Spinner } from '../components/States'
 import { timeAgo } from '../utils/format'
@@ -20,13 +20,17 @@ export default function NotificationsPage() {
   }, [])
   useEffect(() => { load() }, [load])
   useEffect(() => {
-    const socket = io(import.meta.env.VITE_SOCKET_URL || window.location.origin, { withCredentials: true })
+    const socket = connectRealtime({ withCredentials: true })
+    if (!socket) {
+      const polling = window.setInterval(load, 15000)
+      return () => window.clearInterval(polling)
+    }
     socket.on('notification:new', (notification) => setData((current) => {
       if (!current || current.notifications.some((item) => item._id === notification._id)) return current
       return { ...current, notifications: [notification, ...current.notifications].slice(0, 50), unread: current.unread + 1 }
     }))
     return () => socket.disconnect()
-  }, [])
+  }, [load])
   if (error) return <ErrorState message={error} onRetry={load} />
   if (!data) return <Spinner />
   const readAll = async () => { try { await api.patch('/notifications/read-all'); await load() } catch (err) { toast.error(err.message) } }

@@ -2,15 +2,13 @@ import { CheckCheck, Flag, ImagePlus, LoaderCircle, LockKeyhole, MessageCircle, 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate, useParams } from 'react-router-dom'
-import { io } from 'socket.io-client'
 import api from '../api/client'
+import { connectRealtime } from '../api/realtime'
 import Modal from '../components/Modal'
 import PageHeader from '../components/PageHeader'
 import { EmptyState, ErrorState, Spinner } from '../components/States'
 import { useAuth } from '../context/AuthContext'
 import { initials, timeAgo } from '../utils/format'
-
-const socketUrl = import.meta.env.VITE_SOCKET_URL || window.location.origin
 
 export default function ChatsPage() {
   const { id } = useParams()
@@ -81,7 +79,7 @@ export default function ChatsPage() {
   }, [loadChats])
 
   useEffect(() => {
-    const socket = io(socketUrl, {
+    const socket = connectRealtime({
       withCredentials: true,
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -89,6 +87,24 @@ export default function ChatsPage() {
       reconnectionDelayMax: 4000,
       timeout: 10000,
     })
+
+    if (!socket) {
+      socketRef.current = null
+      setConnectionState('offline')
+      const polling = window.setInterval(() => {
+        loadChats()
+        const chatId = activeChatRef.current
+        if (!chatId) return
+        Promise.all([api.get(`/chats/${chatId}`), api.get(`/chats/${chatId}/messages`)]).then(([chatResult, messageResult]) => {
+          if (String(activeChatRef.current || '') !== String(chatId)) return
+          setSelected(chatResult.data.chat)
+          setMessages(Array.isArray(messageResult.data.messages) ? messageResult.data.messages : [])
+          api.patch(`/chats/${chatId}/read`).catch(() => {})
+        }).catch(() => {})
+      }, 5000)
+      return () => window.clearInterval(polling)
+    }
+
     socketRef.current = socket
 
     const joinActiveChat = () => {
