@@ -382,7 +382,7 @@ export default function ChatsPage() {
           <header className="flex shrink-0 items-center gap-3 border-b border-slate-100 p-4 dark:border-slate-800">
             <button onClick={() => navigate('/chats')} className="grid size-9 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200" aria-label="Back to conversations" title="Back to conversations">&larr;</button>
             <span className="grid size-10 place-items-center rounded-xl bg-brand-100 text-xs font-black text-brand-700 dark:bg-brand-500/20">{initials(other?.name)}</span>
-            <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{other?.name || 'Campus member'}</p><p className="truncate text-xs text-slate-400">{selected.kind === 'item_contact' ? 'Item contact' : 'Claim chat'} &middot; {selected.item?.title}</p></div>
+            <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold">{other?.name || 'Campus member'}</p><p className="truncate text-xs text-slate-400">{selected.kind === 'item_contact' ? 'Item contact' : selected.kind === 'admin_claim' ? 'Claimant support' : 'Claim chat'} &middot; {selected.item?.title}</p></div>
             <span className={`hidden items-center gap-1.5 text-[.65rem] font-bold sm:flex ${connectionState === 'connected' && otherOnline ? 'text-emerald-500' : 'text-slate-400'}`} title={connectionState === 'connected' && otherOnline ? `${other?.name || 'User'} is online` : `${other?.name || 'User'} is offline`}>
               <span className={`size-2 rounded-full ${connectionState === 'connected' && otherOnline ? 'bg-emerald-500' : 'bg-slate-500'}`} />
               {connectionState === 'connected' && otherOnline ? 'Live' : 'Offline'}
@@ -392,7 +392,7 @@ export default function ChatsPage() {
 
           <div ref={messageScrollerRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-slate-50/60 p-4 dark:bg-slate-950/40">
             <div className="mx-auto max-w-3xl space-y-3">
-              <div className="mx-auto mb-6 flex max-w-md gap-2 rounded-xl bg-brand-50 p-3 text-xs text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"><LockKeyhole size={16} className="shrink-0" />{selected.kind === 'item_contact' ? 'Use this chat to confirm the item safely. Never share passwords, OTPs, or complete identity numbers.' : 'Keep private answers inside the formal claim. Use chat only to coordinate next steps.'}</div>
+              <div className="mx-auto mb-6 flex max-w-md gap-2 rounded-xl bg-brand-50 p-3 text-xs text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"><LockKeyhole size={16} className="shrink-0" />{selected.kind === 'item_contact' ? 'Use this chat to confirm the item safely. Never share passwords, OTPs, or complete identity numbers.' : selected.kind === 'admin_claim' ? 'This private chat connects the claimant directly with the campus administrator reviewing the claim.' : 'Keep private answers inside the formal claim. Use chat only to coordinate next steps.'}</div>
               {messages.map((message) => {
                 const mine = String(message.sender?._id || message.sender) === String(user._id)
                 const read = mine && message.readBy?.some((reader) => String(reader?._id || reader) === otherUserId)
