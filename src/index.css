@@ -78,18 +78,12 @@ html.theme-transitioning *::after {
 @utility section-kicker { color: #4f46e5; font-size: .72rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
 
 .line-clamp-2 { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-.results-scroll, .browse-filter, .workspace-nav { scrollbar-width: thin; scrollbar-color: #a3a3a3 transparent; }
-.dark .results-scroll, .dark .browse-filter, .dark .workspace-nav { scrollbar-color: #404040 transparent; }
-.results-scroll::-webkit-scrollbar, .browse-filter::-webkit-scrollbar, .workspace-nav::-webkit-scrollbar { width: 7px; }
-.results-scroll::-webkit-scrollbar-track, .browse-filter::-webkit-scrollbar-track, .workspace-nav::-webkit-scrollbar-track { background: transparent; }
-.results-scroll::-webkit-scrollbar-thumb, .browse-filter::-webkit-scrollbar-thumb, .workspace-nav::-webkit-scrollbar-thumb { background: #a3a3a3; border-radius: 999px; }
-.dark .results-scroll::-webkit-scrollbar-thumb, .dark .browse-filter::-webkit-scrollbar-thumb, .dark .workspace-nav::-webkit-scrollbar-thumb { background: #404040; }
-
-@media (min-width: 64rem) {
-  .browse-filter { position: sticky; top: 0; align-self: start; }
-  .results-scroll { scroll-behavior: smooth; scrollbar-gutter: stable; }
-  .results-toolbar { position: sticky; top: 0; z-index: 20; }
-}
+.workspace-nav { scrollbar-width: thin; scrollbar-color: #a3a3a3 transparent; }
+.dark .workspace-nav { scrollbar-color: #404040 transparent; }
+.workspace-nav::-webkit-scrollbar { width: 7px; }
+.workspace-nav::-webkit-scrollbar-track { background: transparent; }
+.workspace-nav::-webkit-scrollbar-thumb { background: #a3a3a3; border-radius: 999px; }
+.dark .workspace-nav::-webkit-scrollbar-thumb { background: #404040; }
 
 .skeleton { background: linear-gradient(90deg, #eef2f7 25%, #f8fafc 50%, #eef2f7 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
 .dark .skeleton { background: linear-gradient(90deg, #111111 25%, #242424 50%, #111111 75%); background-size: 200% 100%; }

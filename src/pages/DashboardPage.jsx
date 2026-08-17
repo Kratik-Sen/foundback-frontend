@@ -33,6 +33,18 @@ import { ErrorState, Spinner } from "../components/States";
 import { useAuth } from "../context/AuthContext";
 import { formatDate, titleCase } from "../utils/format";
 
+const chartTooltipProps = {
+  contentStyle: {
+    backgroundColor: "#000000",
+    border: "1px solid #27272a",
+    borderRadius: "12px",
+    boxShadow: "0 12px 30px rgba(0, 0, 0, 0.45)",
+  },
+  labelStyle: { color: "#f8fafc", fontWeight: 800 },
+  itemStyle: { color: "#e2e8f0" },
+  cursor: { fill: "rgba(255, 255, 255, 0.06)" },
+};
+
 function StatCard({ label, value, Icon, tone = "indigo", note }) {
   const colors = {
     indigo: "bg-brand-50 text-brand-600 dark:bg-brand-500/10",
@@ -261,7 +273,7 @@ function AdminDashboard({ data }) {
                 />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                <Tooltip />
+                <Tooltip {...chartTooltipProps} />
                 <Area
                   type="monotone"
                   dataKey="lost"
@@ -307,7 +319,7 @@ function AdminDashboard({ data }) {
                     <Cell key={color} fill={color} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip {...chartTooltipProps} />
               </PieChart>
             </ResponsiveContainer>
             <div className="pointer-events-none absolute text-center">
@@ -333,7 +345,7 @@ function AdminDashboard({ data }) {
                   width={90}
                   tick={{ fontSize: 11 }}
                 />
-                <Tooltip />
+                <Tooltip {...chartTooltipProps} />
                 <Bar dataKey="count" fill="#4f46e5" radius={[0, 6, 6, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -355,7 +367,7 @@ function AdminDashboard({ data }) {
                   height={60}
                 />
                 <YAxis allowDecimals={false} />
-                <Tooltip />
+                <Tooltip {...chartTooltipProps} />
                 <Bar dataKey="count" fill="#0ea5e9" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
