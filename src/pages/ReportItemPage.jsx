@@ -11,6 +11,7 @@ import PageHeader from '../components/PageHeader'
 import { Spinner } from '../components/States'
 
 function Section({ title, description, children }) {
+  if (title === 'Privacy settings (optional)') return null
   return <section className="card p-5 sm:p-7"><div className="mb-6 border-b border-slate-100 pb-4 dark:border-slate-800"><h2 className="font-extrabold text-slate-950 dark:text-white">{title}</h2>{description && <p className="mt-1 text-xs leading-5 text-slate-500">{description}</p>}</div>{children}</section>
 }
 
@@ -43,8 +44,8 @@ export default function ReportItemPage({ reportType: routeType }) {
   const send = async (values, acknowledge = false) => {
     const form = new FormData()
     Object.entries(values).forEach(([key, value]) => {
-      if (key === 'images') return
-      if (key === 'verificationQuestions' || key === 'privacy') form.append(key, JSON.stringify(value))
+      if (key === 'images' || key === 'privacy') return
+      if (key === 'verificationQuestions') form.append(key, JSON.stringify(value))
       else if (value !== undefined && value !== null) form.append(key, value)
     })
     form.set('reportType', routeType || values.reportType)
