@@ -7,7 +7,6 @@ import {
   PackageOpen,
   SearchCheck,
   ShieldCheck,
-  Sparkles,
   UsersRound,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -81,7 +80,7 @@ function StudentDashboard({ data }) {
       <PageHeader
         eyebrow="Student workspace"
         title="Your FoundBack overview"
-        description="Track reports, matches, claims, and recoveries from one place."
+        description="Track reports, claims, and recoveries from one place."
         actions={
           <>
             <Link className="btn-secondary" to="/report/found">
@@ -93,7 +92,7 @@ function StudentDashboard({ data }) {
           </>
         }
       />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="Lost reports" value={stats.lost} Icon={FileSearch} />
         <StatCard
           label="Found reports"
@@ -106,12 +105,6 @@ function StudentDashboard({ data }) {
           value={stats.active}
           Icon={Activity}
           tone="emerald"
-        />
-        <StatCard
-          label="Possible matches"
-          value={stats.possibleMatches}
-          Icon={Sparkles}
-          tone="violet"
         />
         <StatCard
           label="Pending claims"
@@ -190,16 +183,10 @@ function StudentDashboard({ data }) {
               </div>
             </div>
           </div>
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <Link
-              to="/matches"
-              className="rounded-xl bg-brand-50 p-3 text-center text-xs font-bold text-brand-700 dark:bg-brand-500/10"
-            >
-              Check matches
-            </Link>
+          <div className="mt-6">
             <Link
               to="/saved"
-              className="rounded-xl bg-slate-100 p-3 text-center text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+              className="block rounded-xl bg-slate-100 p-3 text-center text-xs font-bold text-slate-700 dark:bg-slate-800 dark:text-slate-200"
             >
               Saved ({stats.saved || 0})
             </Link>

@@ -1,4 +1,4 @@
-import { CalendarPlus, CheckCircle2, Edit3, ExternalLink, FileSearch, MessageCircle, PackageCheck, Sparkles, Trash2, XCircle } from 'lucide-react'
+import { CalendarPlus, CheckCircle2, Edit3, ExternalLink, FileSearch, MessageCircle, PackageCheck, Trash2, XCircle } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
@@ -9,7 +9,7 @@ import StatusBadge from '../components/StatusBadge'
 import { EmptyState, ErrorState, SkeletonGrid, Spinner } from '../components/States'
 import { formatDate } from '../utils/format'
 
-const endpoints = { listings: '/items/mine', saved: '/items/bookmarks', matches: '/items/matches', claims: '/claims/mine' }
+const endpoints = { listings: '/items/mine', saved: '/items/bookmarks', claims: '/claims/mine' }
 
 export default function CollectionsPage({ type }) {
   const [data, setData] = useState(null)
@@ -17,7 +17,7 @@ export default function CollectionsPage({ type }) {
   const load = useCallback(() => { setError(''); api.get(endpoints[type]).then(({ data: result }) => setData(result)).catch((err) => setError(err.message)) }, [type])
   useEffect(() => { load() }, [load])
   if (error) return <ErrorState message={error} onRetry={load} />
-  if (!data) return type === 'saved' || type === 'matches' ? <SkeletonGrid /> : <Spinner />
+  if (!data) return type === 'saved' ? <SkeletonGrid /> : <Spinner />
 
   if (type === 'listings') {
     const items = data.items || []
@@ -31,11 +31,6 @@ export default function CollectionsPage({ type }) {
     const bookmarks = data.bookmarks || []
     const remove = async (item) => { try { await api.delete(`/items/${item._id}/bookmark`); toast.success('Removed from saved items'); load() } catch (err) { toast.error(err.message) } }
     return <><PageHeader eyebrow="Bookmarks" title="Saved items" description="Keep promising lost and found reports close while their status changes." />{bookmarks.length ? <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">{bookmarks.map((entry) => <ItemCard key={entry._id} item={entry.item} score={entry.matchingScore} saved onBookmark={remove} />)}</div> : <EmptyState title="No saved items" message="Tap the bookmark icon on any approved listing to keep it here." />}</>
-  }
-
-  if (type === 'matches') {
-    const matches = data.matches || []
-    return <><PageHeader eyebrow="Smart matching" title="Possible matches" description="Scores compare category, colour, brand, location, date, and description keywords. Verify privately before claiming." />{matches.length ? <div className="space-y-7">{matches.map((match) => <section key={match._id} className="card p-5"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="flex items-center gap-2 font-extrabold text-slate-950 dark:text-white"><Sparkles size={18} className="text-brand-600" /> {match.matchingScore}% likely match</p><p className="mt-1 text-xs text-slate-500">Matched: {match.matchedFields?.join(', ')}</p></div><StatusBadge status={match.status} /></div><div className="grid gap-5 sm:grid-cols-2"><ItemCard item={match.lostItem} score={match.matchingScore} /><ItemCard item={match.foundItem} score={match.matchingScore} /></div></section>)}</div> : <EmptyState title="No possible matches yet" message="FoundBack recalculates suggestions when opposite-type reports in the same category are approved." />}</>
   }
 
   const claims = data.claims || []

@@ -15,20 +15,13 @@ const featureCards = [
   },
   {
     num: '02',
-    title: 'Your stuff misses you too',
-    description: 'Smart match engine connects finders and owners automatically by location & descriptors.',
-    path: '/matches',
-    buttonText: 'Read more',
-  },
-  {
-    num: '03',
     title: 'Airport & Campus Hub',
     description: 'Centralized verification center backed by campus safety staff and audit logs.',
     path: '/about',
     buttonText: 'Read more',
   },
   {
-    num: '04',
+    num: '03',
     title: 'Lost & found office',
     description: 'OTP-protected handovers ensure retrieved belongings safely return to rightful owners.',
     path: '/report/found',
@@ -39,7 +32,6 @@ const featureCards = [
 const faqs = [
   ['Who can use Lost and Found?', 'Students with an approved college email can register. Staff and admin accounts are managed by campus administrators.'],
   ['Will my personal phone number be public?', 'No. Lost and Found uses secure claim-linked chat by default and hides private contact info.'],
-  ['How are possible matches calculated?', 'Reports are compared by category, colour, brand, campus location, date proximity, and descriptive keywords.'],
   ['Where should a handover happen?', 'Use the college Security Office or another staff-approved campus location. Never meet off campus for a claim.'],
 ]
 

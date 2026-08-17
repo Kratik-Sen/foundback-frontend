@@ -56,7 +56,6 @@ export default function App() {
         <Route path="my-listings" element={<CollectionsPage type="listings" />} />
         <Route path="listings/:id/edit" element={<ReportItemPage />} />
         <Route path="saved" element={<CollectionsPage type="saved" />} />
-        <Route path="matches" element={<CollectionsPage type="matches" />} />
         <Route path="claims" element={<CollectionsPage type="claims" />} />
         <Route path="claims/:id" element={<ClaimDetailsPage />} />
         <Route path="items/:id/claim" element={<ClaimPage />} />
